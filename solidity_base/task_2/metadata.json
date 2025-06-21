@@ -1,0 +1,15 @@
+{
+    "name": "Yeye NFT",
+    "description": "This is a unique NFT created by BeiBei!",
+    "image": "https://sapphire-realistic-warbler-30.mypinata.cloud/ipfs/bafkreiae7aiysvh54j7r4rgyncbo7b36vq765w2sxb6l7cewgokywer6gy",  
+    "attributes": [
+        {
+        "trait_type": "Rarity",
+        "value": "Legendary"
+        },
+        {
+        "trait_type": "Color",
+        "value": "Blue"
+        }
+    ]
+}
