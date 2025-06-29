@@ -1,0 +1,31 @@
+{
+  "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+  "abi": [
+    "error AddressEmptyCode(address)",
+    "error ERC1967InvalidImplementation(address)",
+    "error ERC1967NonPayable()",
+    "error FailedCall()",
+    "error InvalidInitialization()",
+    "error NotInitializing()",
+    "error UUPSUnauthorizedCallContext()",
+    "error UUPSUnsupportedProxiableUUID(bytes32)",
+    "event Initialized(uint64)",
+    "event Upgraded(address indexed)",
+    "function UPGRADE_INTERFACE_VERSION() view returns (string)",
+    "function admin() view returns (address)",
+    "function auctions(uint256) view returns (address,uint256,uint256,uint256,address,uint256,bool,address,uint256,address)",
+    "function createAuction(uint256,uint256,address,uint256)",
+    "function endAuction(uint256)",
+    "function getChainlinkLatestPrice(address) view returns (int256)",
+    "function initialize()",
+    "function nextAuctionId() view returns (uint256)",
+    "function onERC721Received(address,address,uint256,bytes) pure returns (bytes4)",
+    "function placeBid(uint256,uint256,address) payable",
+    "function priceFeeds(address) view returns (address)",
+    "function proxiableUUID() view returns (bytes32)",
+    "function setPriceFeed(address,address)",
+    "function testHello() pure returns (string)",
+    "function upgradeToAndCall(address,bytes) payable"
+  ],
+  "numDeployments": 1
+}
