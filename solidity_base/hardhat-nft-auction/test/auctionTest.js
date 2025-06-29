@@ -42,7 +42,7 @@ describe("Test NftAuction", function () {
     // - NFT 合约地址：testERC721.address
     // - NFT Token ID：1
     await nftAuctionProxyContract.createAuction(
-      ethers.parseEther("0.01"),
+      ethers.parseEther("0.000001"),
       10,
       testERC721.address,
       tokenId
@@ -55,12 +55,11 @@ describe("Test NftAuction", function () {
     //5. 购买者拍卖出价
     await nftAuctionProxyContract
       .connect(buyer1)
-      .placeBid(0, { value: ethers.parseEther("0.015") });
-
+      .placeBid(0, { value: ethers.parseEther("0.001") });
     //6. 购买者2拍卖出价
     await nftAuctionProxyContract
       .connect(buyer2)
-      .placeBid(0, { value: ethers.parseEther("0.02") });
+      .placeBid(0, { value: ethers.parseEther("0.002") });
 
     //7. 等待拍卖时间结束（10秒）
     await new Promise((resolve) => setTimeout(resolve, 10 * 1000));

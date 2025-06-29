@@ -121,52 +121,106 @@ contract NftAuction is Initializable, UUPSUpgradeable, IERC721Receiver {
         require(!auction.ended && block.timestamp < auction.startTime + auction.duration, "Auction already ended");
 
         uint payValue;
+        uint256 bidAmount;
+        
         //如果tokenAddress不为0，则表示使用ERC20代币参与竞价
         if(_tokenAddress != address(0)){
-            payValue=amount*uint256(getChainlinkLatestPrice(_tokenAddress));
+            require(amount > 0, "Amount must be greater than 0");
+            require(msg.value == 0, "Should not send ETH when using ERC20");
+            bidAmount = amount;
+            // ERC20代币数量 * ERC20/USD价格 = USD价值
+            // USDC: 6位小数 * 8位小数价格 / 10^8 = 6位小数USD
+            // 为了统一比较，转换为18位小数: 结果 * 10^12
+            payValue = amount * uint256(getChainlinkLatestPrice(_tokenAddress)) * (10**12) / (10**8);
         }else{ 
             //处理ETH
-            //如果之前有出价，则返回给之前出价者
-            amount=msg.value;
-            payValue=msg.value*uint256(getChainlinkLatestPrice(address(0)));
+            require(msg.value > 0, "Must send ETH");
+            require(amount == 0, "Amount should be 0 when using ETH");
+            bidAmount = msg.value;
+            // ETH数量(wei) * ETH/USD价格 = USD价值
+            // ETH: 18位小数 * 8位小数价格 / 10^8 = 18位小数USD
+            payValue = msg.value * uint256(getChainlinkLatestPrice(address(0))) / (10**8);
         }
 
-        uint startPriceValue=auction.startPrice*uint256(getChainlinkLatestPrice(_tokenAddress));
+        // 计算起始价格的USD价值（使用ETH价格作为基准）
+        uint startPriceValue = auction.startPrice * uint256(getChainlinkLatestPrice(address(0))) / (10**8);
 
-        uint highestBidValue=auction.highestBid*uint256(getChainlinkLatestPrice(_tokenAddress));
+        // 计算当前最高出价的USD价值
+        uint highestBidValue = 0;
+        if(auction.highestBidder != address(0) && auction.highestBid > 0){
+            if(auction.tokenAddress == address(0)){
+                // 之前的出价是ETH (18位小数)
+                highestBidValue = auction.highestBid * uint256(getChainlinkLatestPrice(address(0))) / (10**8);
+            }else{
+                // 之前的出价是ERC20 (6位小数)，需要转换为18位小数统一比较
+                highestBidValue = auction.highestBid * uint256(getChainlinkLatestPrice(auction.tokenAddress)) * (10**12) / (10**8);
+            }
+        }
 
+        
+
+        // 调试信息
+        console.log("=== USD Value Calculation Debug ===");
+        console.log("Token Address:", _tokenAddress);
+        console.log("Bid Amount:", bidAmount);
+        console.log("Token Price:", uint256(getChainlinkLatestPrice(_tokenAddress != address(0) ? _tokenAddress : address(0))));
+        console.log("Pay Value (USD in 18 decimals):", payValue);
+        console.log("Start Price Value (USD in 18 decimals):", startPriceValue);
+        console.log("Highest Bid Value (USD in 18 decimals):", highestBidValue);
+        console.log("Pay Value >= Start Price?", payValue >= startPriceValue);
+        console.log("Pay Value > Highest Bid?", payValue > highestBidValue);
+        console.log("=== Debug End ===");
+        
         //出价必须大于最高价格 和 起始价格
-        require(payValue > highestBidValue && payValue >= startPriceValue, "Bid must be higher than the current highest bid");
+        require(payValue >= startPriceValue, "Pay value must be greater than startPriceValue");
+        require(payValue > highestBidValue, "Bid must be higher than the current highest bid");
 
-        //转移ERC20代币给合约
-        IERC20(_tokenAddress).transferFrom(msg.sender, address(this), amount);
-        if(auction.highestBidder == address(0)){
-            //返回之前的ETH最高出价者
-            payable(auction.highestBidder).transfer(auction.highestBid);
-        }else{
-            //返回之前的ERC20最高出价者
-            IERC20(_tokenAddress).transfer(auction.highestBidder, auction.highestBid);
+        // 返回之前出价者的资金
+        if(auction.highestBidder != address(0) && auction.highestBid > 0){
+            if(auction.tokenAddress == address(0)){
+                // 返回之前的ETH出价者
+                payable(auction.highestBidder).transfer(auction.highestBid);
+            }else{
+                // 返回之前的ERC20出价者
+                IERC20(auction.tokenAddress).transfer(auction.highestBidder, auction.highestBid);
+            }
         }
-        auction.tokenAddress=_tokenAddress;
-        auction.highestBid=amount;
-        auction.highestBidder=msg.sender;
-    
+
+        // 转移当前出价者的资金到合约
+        if(_tokenAddress != address(0)){
+            //转移ERC20代币给合约
+            IERC20(_tokenAddress).transferFrom(msg.sender, address(this), bidAmount);
+        }
+        // ETH已经通过msg.value转移到合约了
+
+        // 更新拍卖信息
+        auction.tokenAddress = _tokenAddress;
+        auction.highestBid = bidAmount;
+        auction.highestBidder = msg.sender;
     }
 
     //结束拍卖
     function endAuction(uint256 auctionId) public {
         Auction storage auction = auctions[auctionId];
 
-        // console.log("endAuction", auction.startTime + auction.duration);
-        // console.log("block.timestamp", block.timestamp);
+
         //判断当前拍卖是否结束
         require(!auction.ended && auction.startTime + auction.duration <= block.timestamp, "Auction has not ended");
         //检查是否有出价者
         require(auction.highestBidder != address(0), "No bids placed"); 
+        
         //转移NFT给最高出价者
         IERC721(auction.nftContract).safeTransferFrom( address(this), auction.highestBidder, auction.tokenId);
-        //将合约余额转移给卖家
-        payable(msg.sender).transfer(address(this).balance);
+        
+        //将资金转移给卖家
+        if(auction.tokenAddress == address(0)){
+            // 如果是ETH，转移ETH给卖家
+            payable(auction.seller).transfer(auction.highestBid);
+        }else{
+            // 如果是ERC20代币，转移ERC20代币给卖家
+            IERC20(auction.tokenAddress).transfer(auction.seller, auction.highestBid);
+        }
+        
         auction.ended = true;    
     }
 

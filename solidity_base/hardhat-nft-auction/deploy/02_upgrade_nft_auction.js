@@ -1,7 +1,5 @@
 // 导入必要的 Hardhat 模块和 Node.js 模块
 const { ethers, upgrades } = require("hardhat");
-const fs = require("fs");
-const path = require("path");
 
 // 合约升级脚本模块导出
 module.exports = async ({ getNamedAccounts, deployments }) => {
@@ -10,16 +8,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   // 获取部署者账户信息
   const { deployer } = await getNamedAccounts();
   console.log("deployer address: ", deployer);
-
-  // 读取之前部署时保存的缓存文件
-  // 获取代理合约地址、逻辑合约地址和 ABI 信息
-  const storePath = path.resolve(
-    __dirname,
-    "../deploy/.cache/proxyNftAuction.json"
-  );
-  const { proxyAddress, logicAddress, abi } = JSON.parse(
-    fs.readFileSync(storePath, "utf-8")
-  );
 
   // 获取升级版的业务合约工厂
   // NftAuctionV2 是合约的升级版本，包含新的功能或修复

@@ -1,0 +1,8 @@
+{
+  "network": "sepolia",
+  "deployer": "0x523df39cAe18ea125930DA730628213e4b147CDc",
+  "testERC721": "0x1f0a4EE8Eca09467519d15f1CaFc08Aaa8288E37",
+  "nftAuctionProxy": "0x3CdbF061a8C389e706C059c6e2fe9bE15B8cB0b0",
+  "nftAuctionLogic": "0xa2Aa8D3bE5b19f317aADa7174d78db5991DF18a8",
+  "timestamp": "2025-06-29T13:23:06.182Z"
+}

@@ -583,11 +583,11 @@
 			]
 		},
 		"contracts/NftAuction.sol": {
-			"keccak256": "0xab5f3ea4215f2ee65854b6d9c94cb7e6dde324c8f57485a15926cb03c05a831e",
+			"keccak256": "0x7afaaa53eaeb814430a748183f9984e637d509d5a09f3f953f8a6958ae2c96ac",
 			"license": "SEE LICENSE IN LICENSE",
 			"urls": [
-				"bzz-raw://d167254fbd8811cc5d813832701492685b0e1b9e81ffd7bb29f48d92c87a93c4",
-				"dweb:/ipfs/QmPkm3LoEXz6vwAPogyme96DNzHqpHrWLMF5AMvzpdoRDE"
+				"bzz-raw://dfaaf0f3b70a39c8bb1a4bf0e13405e151abf820703b87501f088357b3366e5e",
+				"dweb:/ipfs/QmR1tUk9bQNmYXd8ZZQbaMA9uX5CaV8vaRRAJyKhwCrnU1"
 			]
 		},
 		"hardhat/console.sol": {
